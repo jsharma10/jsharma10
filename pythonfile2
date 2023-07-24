@@ -1,0 +1,31 @@
+import requests
+from bs4 import BeautifulSoup
+import openpyxl
+
+def scrape_linkedin_profile(url):
+
+    response = requests.get(url)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    name = soup.select_one('.pv-top-card--list .pv-top-card--list-item').get_text().strip()
+    headline = soup.select_one('.pv-top-card--list .pv-top-card--list-bullet').get_text().strip()
+
+    return {'name': name, 'headline': headline}
+
+def write_to_excel(data, file_name):
+    workbook = openpyxl.Workbook()
+    sheet = workbook.active
+
+    for index, key in enumerate(data.keys(), start=1):
+        sheet.cell(row=index, column=1, value=key)
+        sheet.cell(row=index, column=2, value=data[key])
+
+    workbook.save(file_name)
+
+if __name__ == '__main__':
+    linkedin_url = 'https://www.linkedin.com/in/exampleprofile'
+    profile_data = scrape_linkedin_profile(linkedin_url)
+    print(profile_data)
+
+    excel_file = 'linkedin_profiles.xlsx'
+    write_to_excel(profile_data, excel_file)
+    print(f"Data written to '{excel_file}' successfully.")
